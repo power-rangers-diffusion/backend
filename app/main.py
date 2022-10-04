@@ -11,7 +11,6 @@ from fastapi import FastAPI
 
 from app.response_schemas.generate_image import GenerateImageResponse
 from app.request_schemas.generate_image import GenerateImageRequest
-from app.response_schemas.get_results import GetResultsResponse
 
 app = FastAPI()
 
