@@ -19,7 +19,7 @@ app = FastAPI()
 async def generate_image(rq: GenerateImageRequest):
     request_id = str(uuid4())
 
-    async with aioboto3.Session().resource("sqs") as sqs:
+    async with aioboto3.Session(region_name="us-east-1").resource("sqs") as sqs:
         queue = await sqs.get_queue_by_name(QueueName="inference-request.fifo")
 
         message_dict = {"prompt": rq.prompt}
@@ -36,7 +36,7 @@ async def get_results(request_id: str):
     obj_key = f"{request_id}_generated_image"
     buffer = BytesIO()
 
-    async with aioboto3.Session().resource("s3") as s3:
+    async with aioboto3.Session(region_name="us-east-1").resource("s3") as s3:
         bucket = await s3.Bucket("fsdl-power-rangers")
         try:
             await bucket.download_fileobj(obj_key, buffer)
