@@ -10,6 +10,7 @@ from io import BytesIO
 from fastapi import FastAPI
 
 from app.response_schemas.generate_image import GenerateImageResponse
+from app.response_schemas.get_results import GetResultsResponse
 from app.request_schemas.generate_image import GenerateImageRequest
 
 app = FastAPI()
@@ -18,18 +19,17 @@ app = FastAPI()
 @app.post("/generate-image", response_model=GenerateImageResponse)
 async def generate_image(rq: GenerateImageRequest):
     request_id = str(uuid4())
-
     async with aioboto3.Session(region_name="us-east-1").resource("sqs") as sqs:
         queue = await sqs.get_queue_by_name(QueueName="inference-request.fifo")
 
         message_dict = {"prompt": rq.prompt}
-        await queue.send_message(
+        response = await queue.send_message(
             MessageBody=json.dumps(message_dict),
             MessageGroupId="1",
             MessageDeduplicationId=request_id
         )
 
-    return GenerateImageResponse(request_id=request_id)
+    return GenerateImageResponse(message_id=response['MessageId'])
 
 @app.get("/results/{request_id}")
 async def get_results(request_id: str):
@@ -46,4 +46,4 @@ async def get_results(request_id: str):
             else:
                 raise err
 
-    return json.loads(buffer.getvalue())
+    return GetResultsResponse(**json.loads(buffer.getvalue()))
