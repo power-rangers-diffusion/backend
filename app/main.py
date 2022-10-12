@@ -33,11 +33,11 @@ async def generate_image(rq: GenerateImageRequest):
 
 @app.get("/results/{request_id}")
 async def get_results(request_id: str):
-    obj_key = f"{request_id}_generated_image"
+    obj_key = f"{request_id}.json"
     buffer = BytesIO()
 
     async with aioboto3.Session(region_name="us-east-1").resource("s3") as s3:
-        bucket = await s3.Bucket("fsdl-power-rangers")
+        bucket = await s3.Bucket("fsdl-52-images")
         try:
             await bucket.download_fileobj(obj_key, buffer)
         except botocore.exceptions.ClientError as err:
@@ -46,7 +46,4 @@ async def get_results(request_id: str):
             else:
                 raise err
 
-    base64_img = base64.b64encode(
-        buffer.getvalue()
-    )
-    return { "generated_image": str(base64_img.decode()) }
+    return json.loads(buffer.getvalue())
