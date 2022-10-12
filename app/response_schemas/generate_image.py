@@ -7,6 +7,6 @@ class SimilarityResult(BaseModel):
     similarity: float
 
 class GenerateImageResponse(BaseModel):
-    message_id: str,
-    gen_image: str,
+    message_id: str
+    gen_image: str
     similarity_results: List[SimilarityResult]
